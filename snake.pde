@@ -1,8 +1,9 @@
 Segment head;
-int foodEaten;
-float foodX = random(500);
-float foodY = random(500);
+int foodEaten = 0;
+float foodX = Math.round(random(500)/10.0)*10;
+float foodY = Math.round(random(500)/10.0)*10;
 String direction = "up";
+ArrayList<Segment> snakeSegments = new ArrayList<Segment>();
 
 class Segment {
   int x = 0;
@@ -36,7 +37,10 @@ void draw() {
   background(0);
   drawFood();
   drawSnake();
+  drawTail();
   move();
+  collision();
+  bodyCollision();
 }
 void drawFood() {
   fill(255, 0, 0);
@@ -47,16 +51,16 @@ void drawSnake() {
   rect(head.getX(), head.getY(), 10, 10);
 }
 void keyPressed() {
-  if(keyCode == UP) {
+  if(keyCode == UP && direction != "down") {
     direction = "up";
   }
-  if(keyCode == LEFT) {
+  if(keyCode == LEFT && direction != "right") {
     direction = "left"; 
   }
-  if(keyCode == DOWN) {
+  if(keyCode == DOWN && direction != "up") {
     direction = "down"; 
   }
-  if(keyCode == RIGHT) {
+  if(keyCode == RIGHT && direction != "left") {
     direction = "right"; 
   }
 }
@@ -74,5 +78,46 @@ void move() {
     case "right":
       head = new Segment(head.getX()+10, head.getY());
       break;
-  } 
+  }
+  checkBoundaries();
+}
+void collision() {
+  if(head.getX() == foodX && head.getY() == foodY) {
+    foodEaten++;
+    foodX = Math.round(random(500)/10.0)*10;
+    foodY = Math.round(random(500)/10.0)*10;
+  }
+}
+void checkBoundaries() {
+  if(head.getX() < 0) {
+    head = new Segment(width-10, head.getY());
+  }
+  if(head.getX() > 490) {
+    head = new Segment(0, head.getY());
+  }
+  if(head.getY() < 0) {
+    head = new Segment(head.getX(), height-10);
+  }
+  if(head.getY() > 490) {
+    head = new Segment(head.getX(), 0);
+  }
+}
+void drawTail() {
+  snakeSegments.add(head);
+  for(Segment snake : snakeSegments) {
+    fill(0, 255, 0);
+    rect(snake.getX(), snake.getY(), 10, 10);
+  }
+  while(snakeSegments.size() > foodEaten) {
+    snakeSegments.remove(0);
+  }
+}
+void bodyCollision() {
+  for(int i = 0; i < snakeSegments.size(); i++) {
+    for(int j = 0; j < snakeSegments.size(); j++) {
+      if(snakeSegments.get(i).getX() == snakeSegments.get(j).getX() && snakeSegments.get(i).getY() == snakeSegments.get(j).getY() && i != j) {
+        foodEaten = 1;
+      }
+    }
+  }
 }
